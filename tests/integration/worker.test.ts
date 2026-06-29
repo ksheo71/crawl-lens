@@ -51,6 +51,8 @@ describe('processScan', () => {
         normalizedUrl: 'https://target.test/',
       },
     })
+    const before = await prisma.scan.findUnique({ where: { publicId } })
+    expect(before?.status).toBe('PENDING')
     await processScan(publicId)
     const after = await prisma.scan.findUnique({ where: { publicId } })
     expect(after?.status).toBe('DONE')

@@ -68,7 +68,7 @@ export async function processScan(publicId: string): Promise<void> {
     where: { publicId },
     data: {
       status: 'DONE',
-      fetchStatus: fetchRes.status,
+      fetchStatus: fetchRes.status ?? null,
       totalScore: total,
       categoryScores: categories,
       checks: checks as unknown as object,

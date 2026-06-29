@@ -7,6 +7,8 @@ const scanWorker = new Worker(
   async (job) => {
     await processScan(job.data.publicId)
   },
+  // bullmq bundles its own ioredis@5.10.x while the project uses ioredis@5.11.x.
+  // The two are runtime-equivalent but TypeScript treats them as distinct types.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   { connection: redisConnection as any, concurrency: 2 },
 )
