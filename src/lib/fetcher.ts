@@ -12,6 +12,14 @@ export type FetchResult =
   | { ok: true; finalUrl: string; status: number; headers: Headers; body: string }
   | { ok: false; code: ErrorCode; status?: number }
 
+/**
+ * Fetch a URL with timeout + error classification.
+ *
+ * @param url Target URL.
+ * @param opts.timeoutMs Abort after this many ms. Default 15000.
+ * @param opts.maxRedirects Reserved for v2 — currently ignored. The global
+ *   fetch follows redirects unbounded; pass nothing for now.
+ */
 export async function fetchPage(
   url: string,
   opts: { timeoutMs?: number; maxRedirects?: number } = {},
