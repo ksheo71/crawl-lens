@@ -9,7 +9,8 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
-# Provide dummy env vars so Next.js can collect page data without real secrets
+# Dummy build-time values. Next.js's zod env validation runs during `next build`.
+# These never leak to the runtime image (separate stage), and they are NOT secrets.
 ARG DATABASE_URL=postgresql://build:build@localhost/build
 ARG REDIS_URL=redis://localhost:6379
 ARG PSI_API_KEY=build-placeholder
@@ -28,8 +29,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache \
   chromium nss freetype harfbuzz ca-certificates ttf-freefont \
-  libstdc++ libgcc \
-  && rm -rf /var/cache/apk/*
+  libstdc++ libgcc
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/dist ./dist

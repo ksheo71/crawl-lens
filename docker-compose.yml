@@ -20,6 +20,7 @@ services:
     ports:
       - "127.0.0.1:4500:4500"
     volumes:
+      # Shared PDF cache: worker writes, web reads back to stream PDFs to clients
       - /opt/stack/data/crawl-lens/pdf:/data/pdf
 
   worker:
@@ -34,6 +35,7 @@ services:
       web:
         condition: service_healthy
     volumes:
+      # Shared PDF cache: worker writes, web reads back to stream PDFs to clients
       - /opt/stack/data/crawl-lens/pdf:/data/pdf
 
 networks:
