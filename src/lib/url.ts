@@ -14,7 +14,7 @@ export function normalizeUrl(input: string): string {
     u.port = ''
   }
   u.hash = ''
-  let s = u.toString()
+  const s = u.toString()
   // URL 객체는 경로 없을 때 '/'를 붙여줌. 그대로 둠.
   return s
 }

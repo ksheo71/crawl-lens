@@ -1,6 +1,6 @@
 import { env } from '@/lib/env'
 import { redisConnection } from '@/lib/queue'
-import type { Analyzer, CheckResult, CheckStatus } from './types'
+import type { Analyzer, AnalyzeContext, CheckResult, CheckStatus } from './types'
 
 const PSI_ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
 const METRICS = [
@@ -35,7 +35,7 @@ function skipAll(reason: 'PSI_QUOTA' | 'PSI_TIMEOUT' | 'PSI_FAIL'): CheckResult[
 
 const performanceAnalyzerImpl: Analyzer & {
   runPsi: (url: string, timeoutMs?: number) => Promise<unknown>
-  run(ctx: any, opts?: { timeoutMs?: number }): Promise<CheckResult[]>
+  run(ctx: AnalyzeContext, opts?: { timeoutMs?: number }): Promise<CheckResult[]>
 } = {
   name: 'performance',
   async runPsi(url: string, timeoutMs = 60_000) {
@@ -61,7 +61,7 @@ const performanceAnalyzerImpl: Analyzer & {
     }
   },
   async run(ctx, opts: { timeoutMs?: number } = {}): Promise<CheckResult[]> {
-    let data: any
+    let data: unknown
     try {
       data = await performanceAnalyzer.runPsi(ctx.normalizedUrl, opts.timeoutMs)
     } catch (err) {
@@ -70,7 +70,8 @@ const performanceAnalyzerImpl: Analyzer & {
       if ((err as Error).name === 'AbortError') return skipAll('PSI_TIMEOUT')
       return skipAll('PSI_FAIL')
     }
-    const audits = data?.lighthouseResult?.audits ?? {}
+    const psiData = data as { lighthouseResult?: { audits?: Record<string, { score?: number; displayValue?: string }> } }
+    const audits = psiData?.lighthouseResult?.audits ?? {}
     return METRICS.map((m) => {
       const a = audits[m.auditKey]
       const score = a?.score
@@ -94,5 +95,5 @@ const performanceAnalyzerImpl: Analyzer & {
 
 export const performanceAnalyzer = performanceAnalyzerImpl as Analyzer & {
   runPsi: (url: string, timeoutMs?: number) => Promise<unknown>
-  run(ctx: any, opts?: { timeoutMs?: number }): Promise<CheckResult[]>
+  run(ctx: AnalyzeContext, opts?: { timeoutMs?: number }): Promise<CheckResult[]>
 }

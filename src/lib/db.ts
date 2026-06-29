@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client'
 
 declare global {
-  // eslint-disable-next-line no-var
+  // biome-ignore lint: global var needed for singleton
   var __prisma: PrismaClient | undefined
 }
 
