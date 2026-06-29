@@ -1,19 +1,36 @@
 import { fetchPage } from '@/lib/fetcher'
 import type { Analyzer, CheckResult } from './types'
 
-function parseRobots(text: string, ua = '*'): { disallows: string[]; sitemaps: string[] } {
+export function parseRobots(text: string, ua = '*'): { disallows: string[]; sitemaps: string[] } {
   const disallows: string[] = []
   const sitemaps: string[] = []
-  const lines = text.split(/\r?\n/).map((l) => l.replace(/#.*$/, '').trim()).filter(Boolean)
-  let active = false
+  const lines = text.split(/\r?\n/).map((l) => l.replace(/#.*$/, '').trim())
+  let currentUAs: string[] = []
+  let groupActive = false
+  let lastLineWasDirective = false
   for (const line of lines) {
+    if (!line) continue
     const m = line.match(/^([A-Za-z-]+):\s*(.*)$/)
     if (!m) continue
     const key = m[1].toLowerCase()
     const val = m[2].trim()
-    if (key === 'sitemap') sitemaps.push(val)
-    if (key === 'user-agent') active = val === '*' || val.toLowerCase() === ua.toLowerCase()
-    if (active && key === 'disallow') disallows.push(val)
+    if (key === 'sitemap') {
+      sitemaps.push(val)
+      continue
+    }
+    if (key === 'user-agent') {
+      if (lastLineWasDirective) {
+        // New group starts
+        currentUAs = []
+        groupActive = false
+      }
+      currentUAs.push(val)
+      groupActive = currentUAs.some((u) => u === '*' || u.toLowerCase() === ua.toLowerCase())
+      lastLineWasDirective = false
+    } else if (key === 'disallow' || key === 'allow' || key === 'crawl-delay') {
+      lastLineWasDirective = true
+      if (groupActive && key === 'disallow') disallows.push(val)
+    }
   }
   return { disallows, sitemaps }
 }
@@ -22,7 +39,6 @@ function disallowed(path: string, rules: string[]): boolean {
   for (const r of rules) {
     if (!r) continue // 빈 Disallow 는 허용 의미
     if (path === r) return true
-    if (r.endsWith('/') && path.startsWith(r)) return true
     if (path.startsWith(r)) return true
   }
   return false
