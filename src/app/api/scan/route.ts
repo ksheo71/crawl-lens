@@ -36,7 +36,15 @@ export async function POST(req: Request) {
     },
   })
 
-  await scanQueue.add('scan', { publicId }, { removeOnComplete: 1000, removeOnFail: 5000 })
+  try {
+    await scanQueue.add('scan', { publicId }, { removeOnComplete: 1000, removeOnFail: 5000 })
+  } catch {
+    await prisma.scan.delete({ where: { publicId } }).catch(() => {})
+    return NextResponse.json(
+      { error: '검사를 시작할 수 없었어요. 잠시 후 다시 시도해주세요.' },
+      { status: 500 },
+    )
+  }
 
   return NextResponse.json({ publicId, status: 'PENDING' }, { status: 201 })
 }

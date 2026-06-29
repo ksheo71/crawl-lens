@@ -37,6 +37,15 @@ describe('POST /api/scan', () => {
     expect(res.status).toBe(400)
   })
 
+  it('JSON 파싱 실패 → 400', async () => {
+    const res = await POST(new Request('http://localhost/api/scan', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: 'not json at all',
+    }))
+    expect(res.status).toBe(400)
+  })
+
   it('status 라우트가 PENDING 반환', async () => {
     const created = await POST(req({ url: 'https://other.test/' }))
     const { publicId } = await created.json()
