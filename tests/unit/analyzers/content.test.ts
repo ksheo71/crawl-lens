@@ -26,6 +26,7 @@ describe('contentAnalyzer', () => {
     expect(byId['content.h1.unique'].status).toBe('pass')
     expect(byId['content.image.alt_ratio'].status).toBe('pass')
     expect(byId['content.links.internal_count'].status).toBe('pass')
+    expect(byId['content.links.broken_sample'].status).toBe('skip')
   })
   it('h1 없음: fail', async () => {
     const r = await contentAnalyzer.run(ctx('content-no-h1.html'))

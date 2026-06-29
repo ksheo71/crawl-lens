@@ -106,6 +106,16 @@ export const contentAnalyzer: Analyzer = {
       weight: 3,
     })
 
+    out.push({
+      id: 'content.links.broken_sample',
+      category: 'content',
+      status: 'skip',
+      title: '깨진 링크 점검',
+      message: 'v1에서는 링크 수만 집계해요. 실제 응답 확인은 v2에서 지원 예정입니다.',
+      detail: { totalLinks: internal + external },
+      weight: 1,
+    })
+
     return out
   },
 }
