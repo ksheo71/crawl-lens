@@ -1,0 +1,41 @@
+name: crawl-lens
+
+services:
+  web:
+    build: .
+    image: crawl-lens:latest
+    container_name: crawl-lens-web
+    environment:
+      RUN_MIGRATIONS: "1"
+    env_file: ../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: [edge_shared]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:4500/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
+    ports:
+      - "127.0.0.1:4500:4500"
+    volumes:
+      - /opt/stack/data/crawl-lens/pdf:/data/pdf
+
+  worker:
+    image: crawl-lens:latest
+    container_name: crawl-lens-worker
+    command: ["node", "dist/worker/index.js"]
+    env_file: ../.env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks: [edge_shared]
+    depends_on:
+      web:
+        condition: service_healthy
+    volumes:
+      - /opt/stack/data/crawl-lens/pdf:/data/pdf
+
+networks:
+  edge_shared:
+    external: true

@@ -34,7 +34,7 @@ pdfWorker.on('failed', (job, err) => {
 })
 
 // Immediate first heartbeat
-await redisConnection
+void redisConnection
   .set('worker:heartbeat', new Date().toISOString(), 'EX', 30)
   .catch((err) => {
     console.error(JSON.stringify({ level: 'error', msg: 'heartbeat failed', err: (err as Error).message }))
