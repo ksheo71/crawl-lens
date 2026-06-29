@@ -42,6 +42,9 @@ yarn-error.log*
 # local data
 /data
 
+# sdd workspace
+.superpowers/
+
 # vercel
 .vercel
 
