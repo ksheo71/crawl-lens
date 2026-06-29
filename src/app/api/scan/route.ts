@@ -21,19 +21,22 @@ export async function POST(req: Request) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ ok: false, error: 'invalid json' }, { status: 400 })
+    return NextResponse.json({ ok: false, error: '요청 형식이 올바르지 않아요.' }, { status: 400 })
   }
 
   const parsed = Body.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ ok: false, error: 'invalid body' }, { status: 400 })
+    return NextResponse.json({ ok: false, error: 'URL을 입력해주세요.' }, { status: 400 })
   }
 
   let normalized: string
   try {
     normalized = normalizeUrl(parsed.data.url)
   } catch {
-    return NextResponse.json({ ok: false, error: 'invalid url' }, { status: 400 })
+    return NextResponse.json(
+      { ok: false, error: '분석할 수 없는 주소예요. 외부에 공개된 http(s) URL을 입력해주세요.' },
+      { status: 400 },
+    )
   }
 
   const publicId = newPublicId()

@@ -46,8 +46,14 @@ describe('SSRF', () => {
   it('localhost 차단', () => {
     expect(() => normalizeUrl('http://localhost/')).toThrow('INVALID_URL')
   })
-  it('*.myazit.kr 내부 서비스 차단', () => {
-    expect(() => normalizeUrl('http://cashbook.myazit.kr/')).toThrow('INVALID_URL')
+  it('점 없는 단일 토큰 호스트 차단 (컨테이너명)', () => {
+    expect(() => normalizeUrl('http://caddy/')).toThrow('INVALID_URL')
+    expect(() => normalizeUrl('http://crawl-lens-web:4500/')).toThrow('INVALID_URL')
+    expect(() => normalizeUrl('http://postgres:5432/')).toThrow('INVALID_URL')
+  })
+  it('myazit.kr 서브도메인은 허용 (외부 노출되는 공개 도메인)', () => {
+    expect(normalizeUrl('https://cashbook.myazit.kr/')).toBe('https://cashbook.myazit.kr/')
+    expect(normalizeUrl('https://blog.myazit.kr/post')).toBe('https://blog.myazit.kr/post')
   })
   it('IPv6 ::1 루프백 차단', () => {
     expect(() => normalizeUrl('http://[::1]/')).toThrow('INVALID_URL')

@@ -11,7 +11,12 @@ function assertPublicHost(hostname: string): void {
   // 명시적으로 차단할 호스트명
   if (bare === 'localhost') throw new Error('INVALID_URL')
   if (bare === 'host.docker.internal') throw new Error('INVALID_URL')
-  if (bare.includes('myazit.kr')) throw new Error('INVALID_URL')
+
+  // 점이 없는 단일 토큰 호스트명(예: "caddy", "postgres", "crawl-lens-web")은
+  // 같은 docker network의 컨테이너명으로 해석되어 SSRF 통로가 된다. 차단.
+  // 정상 FQDN은 항상 점을 포함하므로 일반 사용에 영향 없음.
+  // (IPv4/IPv6 리터럴은 아래 isIP에서 별도 처리되므로 여기서 막혀도 무방)
+  if (!bare.includes('.') && !bare.includes(':')) throw new Error('INVALID_URL')
 
   const ipVersion = isIP(bare)
 
