@@ -20,8 +20,9 @@ services:
       timeout: 5s
       retries: 6
       start_period: 60s
-    ports:
-      - "127.0.0.1:4500:4500"
+    # No host port mapping in production — Caddy reaches the container
+    # via `crawl-lens-web:4500` on the shared edge_shared network.
+    # For local manual testing, run `docker compose port web 4500`.
     volumes:
       # Shared PDF cache: worker writes, web reads back to stream PDFs to clients
       - /opt/stack/data/crawl-lens/pdf:/data/pdf
