@@ -29,7 +29,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache \
   chromium nss freetype harfbuzz ca-certificates ttf-freefont \
-  libstdc++ libgcc
+  libstdc++ libgcc \
+  openssl
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/dist ./dist
