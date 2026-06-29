@@ -5,6 +5,7 @@ export function ipHash(ip: string): string {
   return createHash('sha256').update(ip + env.IP_HASH_SALT).digest('hex')
 }
 
+// Trusts `x-forwarded-for` because we sit behind Cloudflare + Caddy.
 export function extractIp(req: Request): string {
   const xff = req.headers.get('x-forwarded-for') ?? ''
   const first = xff.split(',')[0]?.trim()

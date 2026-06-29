@@ -1,6 +1,8 @@
 #!/bin/sh
 set -eu
 
+docker network ls --format '{{.Name}}' | grep -q '^edge_shared$' || docker network create edge_shared
+
 APP_DIR="/opt/stack/services/public/myazit.kr/crawl-lens"
 REPO_DIR="$APP_DIR/repo"
 

@@ -61,6 +61,17 @@ const performanceAnalyzerImpl: Analyzer & {
     }
   },
   async run(ctx, opts: { timeoutMs?: number } = {}): Promise<CheckResult[]> {
+    if (!env.PSI_API_KEY) {
+      return METRICS.map((m) => ({
+        id: m.id,
+        category: 'performance' as const,
+        status: 'skip' as const,
+        title: m.title,
+        message: '성능 측정 키가 설정되어 있지 않아 건너뛰었어요.',
+        detail: { reason: 'PSI_NO_KEY' },
+        weight: m.weight,
+      }))
+    }
     let data: unknown
     try {
       data = await performanceAnalyzer.runPsi(ctx.normalizedUrl, opts.timeoutMs)

@@ -1,6 +1,7 @@
 import type { CheckResult, Category } from '@/analyzers/types'
 
 const CATS: Category[] = ['meta', 'content', 'technical', 'performance']
+// skip: NaN은 sentinel값 — 아래 filter에서 v != null 로 제외되어 점수 분모에서 빠짐 (line 12)
 const STATUS_VAL = { pass: 1, warn: 0.5, fail: 0, skip: NaN } as const
 
 export function aggregate(checks: CheckResult[]): {

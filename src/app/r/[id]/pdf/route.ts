@@ -12,11 +12,27 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const cached = await stat(file).catch(() => null)
   if (cached) return streamPdf(file, id)
 
-  const scan = await prisma.scan.findUnique({ where: { publicId: id }, select: { status: true } })
+  let scan: { status: string } | null
+  try {
+    scan = await prisma.scan.findUnique({ where: { publicId: id }, select: { status: true } })
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: '서비스 일시 오류입니다. 잠시 후 다시 시도해주세요.' },
+      { status: 503 },
+    )
+  }
   if (!scan) return NextResponse.json({ error: 'not found' }, { status: 404 })
   if (scan.status !== 'DONE') return NextResponse.json({ error: 'scan not completed' }, { status: 409 })
 
-  const job = await pdfQueue.add('pdf', { publicId: id }, { removeOnComplete: 100, removeOnFail: 100 })
+  let job: Awaited<ReturnType<typeof pdfQueue.add>>
+  try {
+    job = await pdfQueue.add('pdf', { publicId: id }, { removeOnComplete: 100, removeOnFail: 100 })
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: '서비스 일시 오류입니다. 잠시 후 다시 시도해주세요.' },
+      { status: 503 },
+    )
+  }
   try {
     await job.waitUntilFinished(pdfQueueEvents, 60_000)
   } catch {

@@ -21,39 +21,46 @@ export async function POST(req: Request) {
   try {
     body = await req.json()
   } catch {
-    return NextResponse.json({ error: 'invalid json' }, { status: 400 })
+    return NextResponse.json({ ok: false, error: 'invalid json' }, { status: 400 })
   }
 
   const parsed = Body.safeParse(body)
   if (!parsed.success) {
-    return NextResponse.json({ error: 'invalid body' }, { status: 400 })
+    return NextResponse.json({ ok: false, error: 'invalid body' }, { status: 400 })
   }
 
   let normalized: string
   try {
     normalized = normalizeUrl(parsed.data.url)
   } catch {
-    return NextResponse.json({ error: 'invalid url' }, { status: 400 })
+    return NextResponse.json({ ok: false, error: 'invalid url' }, { status: 400 })
   }
 
   const publicId = newPublicId()
-  await prisma.scan.create({
-    data: {
-      publicId,
-      targetUrl: parsed.data.url,
-      normalizedUrl: normalized,
-      ipHash: ipHash(ip),
-      userAgent: req.headers.get('user-agent') ?? undefined,
-    },
-  })
+  try {
+    await prisma.scan.create({
+      data: {
+        publicId,
+        targetUrl: parsed.data.url,
+        normalizedUrl: normalized,
+        ipHash: ipHash(ip),
+        userAgent: req.headers.get('user-agent') ?? undefined,
+      },
+    })
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: '서비스 일시 오류입니다. 잠시 후 다시 시도해주세요.' },
+      { status: 503 },
+    )
+  }
 
   try {
     await scanQueue.add('scan', { publicId }, { removeOnComplete: 1000, removeOnFail: 5000 })
   } catch {
     await prisma.scan.delete({ where: { publicId } }).catch(() => {})
     return NextResponse.json(
-      { error: '검사를 시작할 수 없었어요. 잠시 후 다시 시도해주세요.' },
-      { status: 500 },
+      { ok: false, error: '서비스 일시 오류입니다. 잠시 후 다시 시도해주세요.' },
+      { status: 503 },
     )
   }
 

@@ -5,3 +5,5 @@
 상세 운영·개발 가이드는 [CLAUDE.md](./CLAUDE.md) 참고.
 
 데모: https://crawl-lens.myazit.kr
+
+다크모드는 v1.1 예정 (디자인 토큰은 준비됨).

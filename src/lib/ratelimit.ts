@@ -14,7 +14,7 @@ export function allowlistContains(ip: string): boolean {
 
 export async function checkRateLimit(ipHashOrIp: string): Promise<{ allowed: boolean; remaining: number }> {
   if (allowlist.has(ipHashOrIp)) return { allowed: true, remaining: LIMIT }
-  const hour = new Date().toISOString().slice(0, 13)
+  const hour = new Date().toISOString().slice(0, 13).replace('T', '-')
   const key = `ratelimit:${ipHashOrIp}:${hour}`
   const n = await redisConnection.incr(key)
   if (n === 1) await redisConnection.expire(key, WINDOW_SEC)

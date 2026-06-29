@@ -24,7 +24,8 @@ export async function GET() {
 
   const hb = await redisConnection.get('worker:heartbeat').catch(() => null)
   const hbAge = hb ? (Date.now() - Date.parse(hb)) / 1000 : null
-  const workerOk = hbAge != null && hbAge < 30
+  // PSI 타임아웃(최대 60s)을 커버하기 위해 90s로 완화. 워커 키 EX는 120s로 설정.
+  const workerOk = hbAge != null && hbAge < 90
   checks.worker = { active: workerOk, lastHeartbeat: hb }
   if (!workerOk) ok = false
 

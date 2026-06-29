@@ -44,3 +44,30 @@ npm run typecheck
 npm test            # unit + integration
 npm run test:e2e    # Playwright
 ```
+
+## v1.1 예정 기능
+
+- 다크모드 토글
+- 사이트 크롤링
+- 로그인/이력
+- 정기 모니터링
+
+## 운영 메모
+
+### BullMQ 큐 토폴로지
+`scan` 큐(검사 잡), `pdf` 큐(PDF 생성). Redis DB index 3.
+
+### Redis 키 컨벤션
+`ratelimit:{hash}:{yyyy-mm-dd-hh}`, `scan:progress:{publicId}`, `worker:heartbeat`, `metric:scan:{done,failed}:{yyyy-mm-dd}`, `metric:psi:quota_used:{yyyy-mm-dd}`.
+
+### IP 해싱
+SHA-256(IP + IP_HASH_SALT). 평문 IP 저장 안 함. salt 회전은 v1.1에서 검토.
+
+### Rate limit
+IP당 시간당 30회. allowlist는 `.env`의 `RATE_LIMIT_ALLOWLIST`.
+
+### robots.txt 정책
+차단된 페이지도 분석하되 결과에 fail 항목 표시. User-Agent: `crawl-lens/1.0 (+https://crawl-lens.myazit.kr)`.
+
+### PSI API 키
+https://developers.google.com/speed/docs/insights/v5/get-started 에서 발급. 일일 25,000회 / 분당 240회 무료. 키가 없으면 성능 카테고리만 SKIP.
