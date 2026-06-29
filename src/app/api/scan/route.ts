@@ -4,10 +4,19 @@ import { prisma } from '@/lib/db'
 import { scanQueue } from '@/lib/queue'
 import { newPublicId } from '@/lib/id'
 import { normalizeUrl } from '@/lib/url'
+import { extractIp, ipHash } from '@/lib/ipHash'
+import { checkRateLimit, allowlistContains } from '@/lib/ratelimit'
 
 const Body = z.object({ url: z.string().min(1) })
 
 export async function POST(req: Request) {
+  const ip = extractIp(req)
+  const allowKey = allowlistContains(ip) ? ip : ipHash(ip)
+  const rl = await checkRateLimit(allowKey)
+  if (!rl.allowed) {
+    return NextResponse.json({ error: '잠시 후 다시 시도해주세요.' }, { status: 429 })
+  }
+
   let body: unknown
   try {
     body = await req.json()
@@ -33,6 +42,8 @@ export async function POST(req: Request) {
       publicId,
       targetUrl: parsed.data.url,
       normalizedUrl: normalized,
+      ipHash: ipHash(ip),
+      userAgent: req.headers.get('user-agent') ?? undefined,
     },
   })
 
