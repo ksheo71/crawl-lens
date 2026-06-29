@@ -8,6 +8,7 @@ const schema = z.object({
   IP_HASH_SALT: z.string().min(16),
   RATE_LIMIT_ALLOWLIST: z.string().optional().default(''),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  PDF_CACHE_DIR: z.string().default('/tmp/crawl-lens-pdf'),
 })
 
 export const env = schema.parse(process.env)

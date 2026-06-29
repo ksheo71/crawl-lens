@@ -9,7 +9,7 @@ export function Actions({ publicId, status }: { publicId: string; status: string
     await navigator.clipboard.writeText(window.location.href)
   }
   return (
-    <div className="flex flex-wrap gap-2 items-center justify-between">
+    <div className="no-print flex flex-wrap gap-2 items-center justify-between">
       <Link href="/" className={cn(buttonVariants({ variant: 'secondary', size: 'sm' }))}>← 새 검사</Link>
       <div className="flex gap-2">
         <Button size="sm" variant="outline" onClick={copy}>URL 복사</Button>

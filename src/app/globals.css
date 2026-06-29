@@ -128,3 +128,14 @@
     @apply font-sans;
   }
 }
+
+@media print {
+  /* 액션 영역 및 헤더 숨김 */
+  .no-print, header { display: none !important; }
+  /* 아코디언 강제 펼침 */
+  [data-state="closed"][data-radix-collection-item],
+  [data-radix-accordion-content][data-state="closed"] { display: block !important; height: auto !important; }
+  details:not([open]) { display: block; }
+  details summary { display: none; }
+  body { background: white; color: black; }
+}

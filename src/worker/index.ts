@@ -1,6 +1,7 @@
 import { Worker } from 'bullmq'
 import { redisConnection } from '@/lib/queue'
 import { processScan } from './scan'
+import { processPdf } from './pdf'
 
 const scanWorker = new Worker(
   'scan',
@@ -15,6 +16,21 @@ const scanWorker = new Worker(
 
 scanWorker.on('failed', (job, err) => {
   console.error(JSON.stringify({ level: 'error', queue: 'scan', jobId: job?.id, msg: err.message }))
+})
+
+const pdfWorker = new Worker(
+  'pdf',
+  async (job) => {
+    await processPdf(job.data.publicId)
+  },
+  // bullmq bundles its own ioredis@5.10.x while the project uses ioredis@5.11.x.
+  // The two are runtime-equivalent but TypeScript treats them as distinct types.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  { connection: redisConnection as any, concurrency: 1 },
+)
+
+pdfWorker.on('failed', (job, err) => {
+  console.error(JSON.stringify({ level: 'error', queue: 'pdf', jobId: job?.id, msg: err.message }))
 })
 
 // Immediate first heartbeat
@@ -33,4 +49,4 @@ setInterval(() => {
     })
 }, 5_000)
 
-console.log(JSON.stringify({ level: 'info', msg: 'worker started', queues: ['scan'] }))
+console.log(JSON.stringify({ level: 'info', msg: 'worker started', queues: ['scan', 'pdf'] }))
