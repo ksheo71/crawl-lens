@@ -32,6 +32,9 @@ RUN apk add --no-cache \
   libstdc++ libgcc \
   openssl
 COPY --from=deps /app/node_modules ./node_modules
+# Prisma client was generated in the build stage; deps stage doesn't have it.
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
