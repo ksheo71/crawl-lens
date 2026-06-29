@@ -33,3 +33,34 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: test
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: crawl_lens
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: crawl_lens_test
+        ports: ['5432:5432']
+        options: --health-cmd pg_isready --health-interval 5s
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+    env:
+      DATABASE_URL: postgresql://crawl_lens:changeme@localhost:5432/crawl_lens_test
+      REDIS_URL: redis://localhost:6379/3
+      PSI_API_KEY: dummy
+      PUBLIC_BASE_URL: http://localhost:4500
+      IP_HASH_SALT: ci-test-salt-1234567890
+      NODE_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci
+      - run: npx prisma generate && npx prisma migrate deploy
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
