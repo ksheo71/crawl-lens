@@ -53,6 +53,7 @@ export function ResultClient({ initial }: { initial: Scan }) {
           setProgress(j.progress ?? 0)
           if (j.status === 'DONE' || j.status === 'FAILED') {
             const full = await fetch(`/api/r/${publicId}`).then((r) => r.json())
+            if (cancelled) return
             setScan(full)
             return
           }
