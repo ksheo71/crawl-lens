@@ -10,7 +10,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const file = join(env.PDF_CACHE_DIR, `${id}.pdf`)
 
   const cached = await stat(file).catch(() => null)
-  if (cached) return streamPdf(file)
+  if (cached) return streamPdf(file, id)
 
   const scan = await prisma.scan.findUnique({ where: { publicId: id }, select: { status: true } })
   if (!scan) return NextResponse.json({ error: 'not found' }, { status: 404 })
@@ -22,17 +22,17 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   } catch {
     return NextResponse.json({ error: 'pdf generation timeout' }, { status: 504 })
   }
-  return streamPdf(file)
+  return streamPdf(file, id)
 }
 
-async function streamPdf(file: string) {
+async function streamPdf(file: string, publicId: string) {
   const buf = await readFile(file)
   return new Response(buf, {
     status: 200,
     headers: {
       'content-type': 'application/pdf',
       'cache-control': 'public, max-age=31536000, immutable',
-      'content-disposition': `inline; filename="crawl-lens-${Date.now()}.pdf"`,
+      'content-disposition': `inline; filename="crawl-lens-${publicId}.pdf"`,
     },
   })
 }

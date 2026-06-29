@@ -13,12 +13,13 @@ export async function processPdf(publicId: string): Promise<string> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const chromium = (await import('@sparticuz/chromium')).default as any
 
-  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
-    ? process.env.PUPPETEER_EXECUTABLE_PATH
-    : await chromium.executablePath()
+  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH ?? await chromium.executablePath()
+  const args = process.env.PUPPETEER_EXECUTABLE_PATH
+    ? ['--no-sandbox', '--disable-dev-shm-usage']
+    : chromium.args
 
   const browser = await puppeteer.launch({
-    args: chromium.args,
+    args,
     executablePath,
     headless: true,
   })
