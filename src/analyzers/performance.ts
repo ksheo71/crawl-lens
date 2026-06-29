@@ -32,8 +32,9 @@ function skipAll(reason: 'PSI_QUOTA' | 'PSI_TIMEOUT' | 'PSI_FAIL'): CheckResult[
   }))
 }
 
-export const performanceAnalyzer: Analyzer & {
+const performanceAnalyzerImpl: Analyzer & {
   runPsi: (url: string, timeoutMs?: number) => Promise<unknown>
+  run(ctx: any, opts?: { timeoutMs?: number }): Promise<CheckResult[]>
 } = {
   name: 'performance',
   async runPsi(url: string, timeoutMs = 60_000) {
@@ -52,10 +53,10 @@ export const performanceAnalyzer: Analyzer & {
       clearTimeout(timer)
     }
   },
-  async run(ctx): Promise<CheckResult[]> {
+  async run(ctx, opts: { timeoutMs?: number } = {}): Promise<CheckResult[]> {
     let data: any
     try {
-      data = await performanceAnalyzer.runPsi(ctx.normalizedUrl)
+      data = await performanceAnalyzer.runPsi(ctx.normalizedUrl, opts.timeoutMs)
     } catch (err) {
       const msg = (err as Error).message
       if (msg === 'PSI_QUOTA') return skipAll('PSI_QUOTA')
@@ -82,4 +83,9 @@ export const performanceAnalyzer: Analyzer & {
       }
     })
   },
+}
+
+export const performanceAnalyzer = performanceAnalyzerImpl as Analyzer & {
+  runPsi: (url: string, timeoutMs?: number) => Promise<unknown>
+  run(ctx: any, opts?: { timeoutMs?: number }): Promise<CheckResult[]>
 }

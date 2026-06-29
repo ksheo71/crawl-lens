@@ -66,11 +66,11 @@ describe('performanceAnalyzer', () => {
 
   it('타임아웃 → 모두 skip', async () => {
     server.use(http.get('https://www.googleapis.com/pagespeedonline/v5/runPagespeed', async () => {
-      await delay(70_000)
+      await delay(500)
       return HttpResponse.json({})
     }))
-    const r = await performanceAnalyzer.run({ ...ctx } as AnalyzeContext)
+    const r = await performanceAnalyzer.run({ ...ctx } as AnalyzeContext, { timeoutMs: 100 })
     expect(r.every((c) => c.status === 'skip')).toBe(true)
     expect(r[0].detail).toMatchObject({ reason: 'PSI_TIMEOUT' })
-  }, 65_000)
+  })
 })
