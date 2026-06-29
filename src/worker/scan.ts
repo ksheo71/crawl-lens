@@ -36,6 +36,12 @@ export async function processScan(publicId: string): Promise<void> {
       },
     })
     await setProgress(publicId, 100)
+
+    // Increment failed metric
+    const today = new Date().toISOString().slice(0, 10)
+    await redisConnection.incr(`metric:scan:failed:${today}`)
+    await redisConnection.expire(`metric:scan:failed:${today}`, 60 * 60 * 36)
+
     return
   }
 
@@ -76,6 +82,11 @@ export async function processScan(publicId: string): Promise<void> {
     },
   })
   await setProgress(publicId, 100)
+
+  // Increment done metric
+  const today = new Date().toISOString().slice(0, 10)
+  await redisConnection.incr(`metric:scan:done:${today}`)
+  await redisConnection.expire(`metric:scan:done:${today}`, 60 * 60 * 36)
 }
 
 async function safe<T>(p: Promise<T[]>): Promise<T[]> {

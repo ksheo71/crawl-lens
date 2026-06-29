@@ -17,4 +17,12 @@ scanWorker.on('failed', (job, err) => {
   console.error(JSON.stringify({ level: 'error', queue: 'scan', jobId: job?.id, msg: err.message }))
 })
 
+// Immediate first heartbeat
+await redisConnection.set('worker:heartbeat', new Date().toISOString(), 'EX', 30)
+
+// Periodic heartbeat (every 5 seconds)
+setInterval(async () => {
+  await redisConnection.set('worker:heartbeat', new Date().toISOString(), 'EX', 30)
+}, 5_000)
+
 console.log(JSON.stringify({ level: 'info', msg: 'worker started', queues: ['scan'] }))

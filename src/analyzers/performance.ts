@@ -1,4 +1,5 @@
 import { env } from '@/lib/env'
+import { redisConnection } from '@/lib/queue'
 import type { Analyzer, CheckResult, CheckStatus } from './types'
 
 const PSI_ENDPOINT = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
@@ -48,6 +49,12 @@ const performanceAnalyzerImpl: Analyzer & {
       const res = await fetch(u, { signal: controller.signal })
       if (res.status === 429) throw new Error('PSI_QUOTA')
       if (!res.ok) throw new Error('PSI_FAIL')
+
+      // Increment PSI quota metric on successful response
+      const today = new Date().toISOString().slice(0, 10)
+      await redisConnection.incr(`metric:psi:quota_used:${today}`)
+      await redisConnection.expire(`metric:psi:quota_used:${today}`, 60 * 60 * 36)
+
       return await res.json()
     } finally {
       clearTimeout(timer)
