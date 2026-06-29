@@ -22,7 +22,9 @@ ENV DATABASE_URL=${DATABASE_URL} \
     PUBLIC_BASE_URL=${PUBLIC_BASE_URL} \
     IP_HASH_SALT=${IP_HASH_SALT}
 RUN npm run build
-RUN npx tsc -p tsconfig.worker.json
+# Compile worker to CJS, then rewrite @/* path aliases to real relative paths
+# (Node has no concept of TS path aliases at runtime).
+RUN npx tsc -p tsconfig.worker.json && npx tsc-alias -p tsconfig.worker.json
 
 FROM node:22-alpine AS runtime
 WORKDIR /app
