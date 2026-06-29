@@ -12,11 +12,14 @@ services:
       - "host.docker.internal:host-gateway"
     networks: [edge_shared]
     healthcheck:
-      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:4500/api/health"]
+      # --spider returns success on any HTTP response, so 503 (worker not yet up)
+      # still counts as "container can serve" — prevents the chicken-and-egg
+      # deadlock with worker.depends_on web.service_healthy.
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:4500/api/health"]
       interval: 10s
       timeout: 5s
       retries: 6
-      start_period: 30s
+      start_period: 60s
     ports:
       - "127.0.0.1:4500:4500"
     volumes:
