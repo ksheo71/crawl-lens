@@ -5,6 +5,13 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://crawl_lens:changeme@localhost:5432/crawl_lens_test
+      REDIS_URL: redis://localhost:6379/3
+      PSI_API_KEY: dummy
+      PUBLIC_BASE_URL: http://localhost:4500
+      IP_HASH_SALT: ci-test-salt-1234567890
+      NODE_ENV: test
     services:
       postgres:
         image: postgres:16-alpine
@@ -26,10 +33,3 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
       - run: npm run test
-        env:
-          DATABASE_URL: postgresql://crawl_lens:changeme@localhost:5432/crawl_lens_test
-          REDIS_URL: redis://localhost:6379/3
-          PSI_API_KEY: dummy
-          PUBLIC_BASE_URL: http://localhost:4500
-          IP_HASH_SALT: ci-test-salt-1234567890
-          NODE_ENV: test
