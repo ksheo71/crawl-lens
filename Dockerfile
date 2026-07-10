@@ -31,8 +31,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache \
   chromium nss freetype harfbuzz ca-certificates ttf-freefont \
+  font-noto-cjk fontconfig \
   libstdc++ libgcc \
-  openssl
+  openssl \
+  && fc-cache -f
 COPY --from=deps /app/node_modules ./node_modules
 # Prisma client was generated in the build stage; deps stage doesn't have it.
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
